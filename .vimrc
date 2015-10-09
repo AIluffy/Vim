@@ -1,6 +1,6 @@
 "The AI's Personal vim configure file. Continue to be improved.
 "
-"Modified Time: 2015/9/26
+"Modified Time: 2015/10/9
 "
 " ==> VBundle Configure
 "
@@ -32,6 +32,28 @@ Plugin 'AutoClose'
 "-- In Vim's editor window, display file directory in tree mode
 Plugin 'The-NERD-tree'
 
+"-- Vim plugin, insert or delete brackets, parens, quotes in pair
+Plugin 'jiangmiao/auto-pairs'
+
+"-- Full path fuzzy file. buffer, mru, tag, ... finder for vim
+Plugin 'kien/ctrlp.vim'
+
+"-- CtrlP.vim extension. It simply navigates and jumps to function definition from the
+"current file without ctags
+Plugin 'tacahiroy/ctrlp-funky'
+
+"-- Display thin vertical lines at each indentation level for code indented spaces
+Plugin 'Yggdroot/indentLine'
+
+"-- The "Tag List" plugin is a source code browser plugin for Vim and
+"provides an overview of the structure of source code files and allows
+"you to efficiently browse through source code files for different
+"programming languages.
+Plugin 'vim-scripts/taglist.vim'
+
+"-- Vim indent file for java sources file
+Plugin 'xuhdev/indent-java.vim'
+
 " Git plugin not hosted on GitHub
 "-- Plugin 'git://git.wincent.com/command-t.git'
 " git repos on your local machine (i.e. when working on your own plugin)
@@ -39,7 +61,6 @@ Plugin 'The-NERD-tree'
 " The sparkup vim script is in a subdirectory of this repo called vim.
 " Pass the path to set the runtimepath properly.
 "-- Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
-Plugin 'zenorocha/dracula-theme', {'rtp': 'vim/'}
 " Avoid a name conflict with L9
 "-- Plugin 'user/L9', {'name': 'newL9'}
 
@@ -72,6 +93,12 @@ nnoremap nw <c-w><c-w>
 " turn off search highlight
 nnoremap <leader><space> :nohlsearch<CR>
 
+" ==> Spell checking
+"
+" Pressing, ss will toggle and untoggle spell checking
+map <leader>ss :setlocal spell!<cr>
+
+
 " ==> General
 "
 " allow backspacing over everything in insert mode
@@ -81,6 +108,7 @@ set whichwrap+=<,>,h,l
 " do not keep a backup file, use version instead
 set nobackup
 set noswapfile
+set nowb
 
 " keep an undo file (undo changes after closing)
 set undofile
@@ -88,17 +116,23 @@ set undofile
 " Keep 500 lines of command line history
 set history=500
 
+" Set to auto read when a file is changed from the outside
+set autoread
+
 " show the cursor position all the time
 set ruler
 
 " show the line number
 set number
 
-" hightlight current line
+" highlight current line
 set cursorline
 
 " display incomplete commands
 set showcmd
+
+" Don't use Ex mode, use Q for formatting
+map Q gq
 
 " show matching brackets when text indicator is over them
 set showmatch
@@ -109,6 +143,17 @@ set mat=2
 " visual autocomplete for command menu, it will provide a graphical menu of
 " all the matches you can circle through
 set wildmenu
+
+" In many terminal emulators the mouse works just fine, thus enable it.
+if has('mouse')
+  set mouse=a 
+endif
+
+" No annoying sound on errors
+set noerrorbells
+set novisualbell
+set t_vb=
+set tm=500
 
 
 " ==> Searching
@@ -138,7 +183,7 @@ set magic
 syntax on
 set t_Co=256
 set background=dark
-colorscheme molokai
+colorscheme dracula 
 
 " Set utf8 as standard encoding and en_US as the standard language
 set encoding=utf8
@@ -159,8 +204,14 @@ set tabstop=4
 " number of spaces in tab when editing
 set softtabstop=4
 
+" Auto indent
+set autoindent
 
-" ==> Movement
+" Wrap lines
+set wrap
+
+
+" ==> Map
 "
 " move vertically by visual line
 nnoremap j gj
@@ -173,3 +224,102 @@ nnoremap E $
 " $/^ doesnt do anything
 nnoremap $ <nop>
 nnoremap ^ <nop>
+
+" CTRL-U in insert mode deletes a lot.  Use CTRL-G u to first break undo,
+" so that you can undo CTRL-U after inserting a line break.
+inoremap <C-U> <C-G>u<C-U>
+
+" open NERDTree to open a directory tree
+map <F4> :NERDTree<cr>
+
+
+" ==> IDE Settings
+" New .c, .h, .sh, .java file, auto insert file header
+autocmd BufNewFile *.cpp,*.sh,*.java exec ":call SetTitle()"
+func SetTitle()
+    " .sh file type
+    if &filetype == 'sh'
+        call setline(1, "")
+        call append(line("."), "\@File Name: ".expand("%"))
+        call append(line(".")+1, "\@Author: AIluffy")
+        call append(line(".")+2, "\@Created Time: ".strftime("%c"))
+        call append(line(".")+3, "") 
+        call append(line(".")+4, "\#! /bin/bash")
+        call append(line(".")+5, "")
+    else
+        call setline(1, ">>>File Name: ".expand("%"))
+        call append(line("."), ">>>Author: AIluffy")
+        call append(line(".")+1, ">>>Created Time: ".strftime("%c"))
+        call append(line(".")+2, "")
+    endif
+    " .cpp file type
+    if &filetype == 'cpp'
+        call append(line(".")+3, "#include<iostream>")
+        call append(line(".")+4, "using namespace std;")
+        call append(line(".")+5, "")
+    endif
+    "After create file, auto locate to the end of the file
+    autocmd BufNewFile * normal G
+endfunc
+
+" ==> For IDE Plugins Settings
+" Convenient command to see the difference between the current buffer and the
+" file it was loaded from, thus the changes you made.
+" Only define it when not defined already.
+if !exists(":DiffOrig")
+  command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis
+		  \ | wincmd p | diffthis
+endif
+
+" Remember info about open buffers on close
+set viminfo^=%
+
+" --> NERDTree Plugin
+" Open a NERDTree automatically when vim starts up if no files were specified
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+
+" Close vim if the only wnidow left open is a NERDTree
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTreeType == "primary") | q | endif
+
+" --> CtrlP
+" Change the default mapping and the default command to invoke CtrlP
+let g:ctrlp_map='<c-p>'
+let g:ctrlp_cmd='CtrlP'
+
+" Exclude files or directories
+set wildignore+=*/tmp/*,*.so,*.swp,*.zip
+let g:ctrlp_custom_ignore = {
+    \ 'dir':  '\v[\/]\.(git|hg|svn)$',
+    \ 'file': '\v\.(exe|so|dll)$',
+    \ 'link': 'SOME_BAD_SYMBOLIC_LINKS',
+    \ }
+
+" Vim+Ctags+CtrlP, let you search through your tags file and jump to where
+" tags are defined
+nnoremap <leader>t :CtrlPTag<cr>
+
+" --> CtrlP-Funky
+" Define key mapping
+map <F6> :CtrlPFunky<cr>
+let g:ctrlp_extensions = ['funky']
+let g:ctrlp_funky_syntax_highlight = 1
+
+" --> TagList
+" Map a key to invoke taglist
+map <F5> :Tlist<cr>
+let Tlist_Show_One_File = 1
+let Tlist_Exit_OnlyWindow = 1 
+let Tlist_Use_Right_Window = 1
+let Tlist_GainFocus_On_ToggleOpen = 1
+
+" --> IndentLine
+" Change Character Color
+let g:indentLine_color_term = 239
+"Change Indent Char
+let g:indentLine_char = '┆'
+"Disable by default
+let g:indentLine_enabled = 1
+"Specify a character to show for leading spaces
+let g:indentLine_leadingSpaceChar = '·'
+let g:indentLine_leadingSpaceEnabled = 1 
