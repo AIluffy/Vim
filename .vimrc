@@ -1,6 +1,6 @@
 "The AI's Personal vim configure file. Continue to be improved.
 "
-"Modified Time: 2015/10/9
+"Modified Time: 2015/10/13
 "
 " ==> VBundle Configure
 "
@@ -38,6 +38,9 @@ Plugin 'jiangmiao/auto-pairs'
 "-- Full path fuzzy file. buffer, mru, tag, ... finder for vim
 Plugin 'kien/ctrlp.vim'
 
+"-- Plugin to toggle, display and navigate marks
+Plugin 'vim-scripts/vim-signature'
+
 "-- CtrlP.vim extension. It simply navigates and jumps to function definition from the
 "current file without ctags
 Plugin 'tacahiroy/ctrlp-funky'
@@ -53,6 +56,9 @@ Plugin 'vim-scripts/taglist.vim'
 
 "-- Vim indent file for java sources file
 Plugin 'xuhdev/indent-java.vim'
+
+"-- Additional Vim syntax highlighting for C++(including C++11/14)
+Plugin 'octol/vim-cpp-enhanced-highlight'
 
 " Git plugin not hosted on GitHub
 "-- Plugin 'git://git.wincent.com/command-t.git'
@@ -87,17 +93,33 @@ let mapleader=","
 " Fast saving
 nnoremap <leader>w :w!<cr>
 
+" Fast close
+nnoremap <leader>q :q<cr>
+
 " travel through child windows
 nnoremap nw <c-w><c-w>
+
+" Fast close
+nnoremap <leader>q :q<cr>
+
+" Fast pair
+nmap <leader>m %
+
+" Copy the chosen block to the system clipboard
+vnoremap <leader>y "+y
+
+" Paste the content of clipboard to the vim
+nmap <leader>p "+p
 
 " turn off search highlight
 nnoremap <leader><space> :nohlsearch<CR>
 
-" ==> Spell checking
-"
 " Pressing, ss will toggle and untoggle spell checking
 map <leader>ss :setlocal spell!<cr>
 
+" map check all + copycheck all
+map <C-A> ggVGY
+map! <C-A> <Esc>ggVGY 
 
 " ==> General
 "
@@ -180,6 +202,7 @@ set magic
 " ==> Colors and Fonts
 "
 " Enable syntax highlighting
+syntax enable
 syntax on
 set t_Co=256
 set background=dark
@@ -210,6 +233,15 @@ set autoindent
 " Wrap lines
 set wrap
 
+" ------------Code Fold
+" Fold based on syntax
+set foldmethod=syntax
+
+" Starting vim without code folding
+set nofoldenable
+
+" Space open/closes folds
+nnoremap <space> za
 
 " ==> Map
 "
@@ -234,35 +266,38 @@ map <F4> :NERDTree<cr>
 
 
 " ==> IDE Settings
+"
 " New .c, .h, .sh, .java file, auto insert file header
 autocmd BufNewFile *.cpp,*.sh,*.java exec ":call SetTitle()"
 func SetTitle()
     " .sh file type
     if &filetype == 'sh'
-        call setline(1, "")
-        call append(line("."), "\@File Name: ".expand("%"))
-        call append(line(".")+1, "\@Author: AIluffy")
-        call append(line(".")+2, "\@Created Time: ".strftime("%c"))
-        call append(line(".")+3, "") 
+        call setline(1, "\#####################################################################")
+        call append(line("."), "\#File Name: ".expand("%"))
+        call append(line(".")+1, "\#Author: AIluffy")
+        call append(line(".")+2, "\#Created Time: ".strftime("%c"))
+        call append(line(".")+3, "\####################################################################") 
         call append(line(".")+4, "\#! /bin/bash")
         call append(line(".")+5, "")
     else
-        call setline(1, ">>>File Name: ".expand("%"))
-        call append(line("."), ">>>Author: AIluffy")
-        call append(line(".")+1, ">>>Created Time: ".strftime("%c"))
-        call append(line(".")+2, "")
+        call setline(1, " /************************************************************")
+        call append(line("."), "  >File Name: ".expand("%"))
+        call append(line(".")+1, "  >Author: AIluffy")
+        call append(line(".")+2, "  >Created Time: ".strftime("%c"))
+        call append(line(".")+3, "***************************************************************/")
+        call append(line(".")+4, "")
     endif
     " .cpp file type
     if &filetype == 'cpp'
-        call append(line(".")+3, "#include<iostream>")
-        call append(line(".")+4, "using namespace std;")
-        call append(line(".")+5, "")
+        call append(line(".")+5, "#include<iostream>")
+        call append(line(".")+6, "")
+        call append(line(".")+7, "using namespace std;")
+        call append(line(".")+8, "")
     endif
-    "After create file, auto locate to the end of the file
-    autocmd BufNewFile * normal G
 endfunc
 
 " ==> For IDE Plugins Settings
+"
 " Convenient command to see the difference between the current buffer and the
 " file it was loaded from, thus the changes you made.
 " Only define it when not defined already.
@@ -286,6 +321,9 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTree
 " Change the default mapping and the default command to invoke CtrlP
 let g:ctrlp_map='<c-p>'
 let g:ctrlp_cmd='CtrlP'
+
+" Tell CtrlP always open files in new buffers
+let g:ctrlp_switch_buffer=0
 
 " Exclude files or directories
 set wildignore+=*/tmp/*,*.so,*.swp,*.zip
@@ -323,3 +361,9 @@ let g:indentLine_enabled = 1
 "Specify a character to show for leading spaces
 let g:indentLine_leadingSpaceChar = '·'
 let g:indentLine_leadingSpaceEnabled = 1 
+
+"--> cpp-enhanced-highlight
+" Highlighting of class scope if disabled by default
+let g:cpp_class_scope_highlight = 1
+"Highlighting of template functions is enabled by setting
+let g:cpp_experimental_template_highlight = 1
