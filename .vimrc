@@ -1,6 +1,6 @@
 "The AI's Personal vim configure file. Continue to be improved.
 "
-"Modified Time: 2015/10/13
+"Modified Time: 2015/10/24
 "
 " ==> VBundle Configure
 "
@@ -28,6 +28,12 @@ Plugin 'SuperTab'
 
 "-- Type (),"" auto complete
 Plugin 'AutoClose'
+
+"-- Comment stuff
+Plugin 'tpope/vim-commentary'
+
+"-- Syntax checking hacks for vim
+Plugin 'scrooloose/syntastic'
 
 "-- In Vim's editor window, display file directory in tree mode
 Plugin 'The-NERD-tree'
@@ -120,6 +126,12 @@ map <leader>ss :setlocal spell!<cr>
 " map check all + copycheck all
 map <C-A> ggVGY
 map! <C-A> <Esc>ggVGY 
+
+" Quick write session with <F2>
+map <leader><F2> :mksession! ~/.vim_session <cr>
+
+" Load session with <F3>
+map <leader><F3> :source ~/.vim_session <cr>
 
 " ==> General
 "
@@ -272,27 +284,32 @@ autocmd BufNewFile *.cpp,*.sh,*.java exec ":call SetTitle()"
 func SetTitle()
     " .sh file type
     if &filetype == 'sh'
-        call setline(1, "\#####################################################################")
-        call append(line("."), "\#File Name: ".expand("%"))
-        call append(line(".")+1, "\#Author: AIluffy")
-        call append(line(".")+2, "\#Created Time: ".strftime("%c"))
-        call append(line(".")+3, "\####################################################################") 
-        call append(line(".")+4, "\#! /bin/bash")
-        call append(line(".")+5, "")
-    else
-        call setline(1, " /************************************************************")
-        call append(line("."), "  >File Name: ".expand("%"))
-        call append(line(".")+1, "  >Author: AIluffy")
-        call append(line(".")+2, "  >Created Time: ".strftime("%c"))
-        call append(line(".")+3, "***************************************************************/")
+        call setline(1, "\#! /bin/bash")
+        call append(line(".")+2, "")
+    if &filetype == 'cpp'
+        call setline(1, "#include<iostream>")
+        call append(line(".")+2, "")
+        call append(line(".")+3, "using namespace std;")
         call append(line(".")+4, "")
     endif
-    " .cpp file type
-    if &filetype == 'cpp'
-        call append(line(".")+5, "#include<iostream>")
-        call append(line(".")+6, "")
-        call append(line(".")+7, "using namespace std;")
-        call append(line(".")+8, "")
+endfunc
+
+" C, C++ complie and run map to Ctrl+B
+map <F7> :call CompileRunGcc()<cr>
+
+func! CompileRunGcc()
+    exec "w"
+    if &filetype == 'c'
+        exec "!gcc % -o %<"
+        exec "!./%<"
+    elseif &filetype == 'cpp'
+        exec "!g++ % -o %<"
+        exec "!./%<"
+    elseif &filetype == 'java'
+        exec "!javac %"
+        exec "!java %<"
+    elseif &filetype == 'sh'
+        :!./%
     endif
 endfunc
 
@@ -321,6 +338,9 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTreeType") && b:NERDTree
 " Change the default mapping and the default command to invoke CtrlP
 let g:ctrlp_map='<c-p>'
 let g:ctrlp_cmd='CtrlP'
+
+" Disable work path mode
+let g:ctrlp_working_path_mode = '0'
 
 " Tell CtrlP always open files in new buffers
 let g:ctrlp_switch_buffer=0
@@ -367,3 +387,13 @@ let g:indentLine_leadingSpaceEnabled = 1
 let g:cpp_class_scope_highlight = 1
 "Highlighting of template functions is enabled by setting
 let g:cpp_experimental_template_highlight = 1
+
+" --> Syntastic
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
