@@ -26,14 +26,17 @@ Plugin 'VundleVim/Vundle.vim'
 "-- Plugin 'L9'
 Plugin 'SuperTab'
 
+"--dracula theme
+Plugin 'crusoexia/vim-dracula'
+
+"--Vastly improved Javascript indentation and syntax support in Vim.
+Plugin 'pangloss/vim-javascript'
+
 "-- Type (),"" auto complete
 Plugin 'AutoClose'
 
 "-- Comment stuff
 Plugin 'tpope/vim-commentary'
-
-"-- Syntax checking hacks for vim
-Plugin 'scrooloose/syntastic'
 
 "-- In Vim's editor window, display file directory in tree mode
 Plugin 'The-NERD-tree'
@@ -53,12 +56,6 @@ Plugin 'tacahiroy/ctrlp-funky'
 
 "-- Display thin vertical lines at each indentation level for code indented spaces
 Plugin 'Yggdroot/indentLine'
-
-"-- The "Tag List" plugin is a source code browser plugin for Vim and
-"provides an overview of the structure of source code files and allows
-"you to efficiently browse through source code files for different
-"programming languages.
-Plugin 'vim-scripts/taglist.vim'
 
 "-- Vim indent file for java sources file
 Plugin 'xuhdev/indent-java.vim'
@@ -214,6 +211,7 @@ set magic
 " ==> Colors and Fonts
 "
 " Enable syntax highlighting
+set regexpengine=1
 syntax enable
 syntax on
 set t_Co=256
@@ -353,23 +351,12 @@ let g:ctrlp_custom_ignore = {
     \ 'link': 'SOME_BAD_SYMBOLIC_LINKS',
     \ }
 
-" Vim+Ctags+CtrlP, let you search through your tags file and jump to where
-" tags are defined
-nnoremap <leader>t :CtrlPTag<cr>
-
 " --> CtrlP-Funky
 " Define key mapping
 map <F6> :CtrlPFunky<cr>
 let g:ctrlp_extensions = ['funky']
 let g:ctrlp_funky_syntax_highlight = 1
 
-" --> TagList
-" Map a key to invoke taglist
-map <F5> :Tlist<cr>
-let Tlist_Show_One_File = 1
-let Tlist_Exit_OnlyWindow = 1 
-let Tlist_Use_Right_Window = 1
-let Tlist_GainFocus_On_ToggleOpen = 1
 
 " --> IndentLine
 " Change Character Color
@@ -388,12 +375,6 @@ let g:cpp_class_scope_highlight = 1
 "Highlighting of template functions is enabled by setting
 let g:cpp_experimental_template_highlight = 1
 
-" --> Syntastic
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
+"--> javascript configuration
+"Enables HTML/CSS syntax highlighting in your JavaScript file.
+let g:javascript_enable_domhtmlcss = 1
